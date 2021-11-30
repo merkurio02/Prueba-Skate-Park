@@ -1,0 +1,101 @@
+<div class="row">
+  <div class="col-12 col-ms-8 col-md-6  mx-auto mt-3">
+    <form class="bg-light rounded  p-3" action="/register" method="post" enctype="multipart/form-data">
+      <h3>Modificar Usuario</h3>
+      <div class="row">
+        <div class="col-6">
+          <div class="mb-2 bg-light rounded mx-auto">
+            <label for="exampleFormControlInput1" class="form-label">Email</label>
+            <input type="email" class="form-control bg-secondary" id="Email" name="email" required readonly>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="mb-2 bg-light rounded mx-auto">
+            <label for="exampleFormControlInput1" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="Nombre" name="nombre" required >
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="mb-2 bg-light rounded mx-auto">
+            <label for="exampleFormControlInput1" class="form-label">Años de experiencia</label>
+            <input type="number" class="form-control" id="anosExperiencia" name="anosExperiencia" required>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="mb-2 bg-light rounded mx-auto">
+            <label for="exampleFormControlInput1" class="form-label">Especialidad</label>
+            <input type="text" class="form-control" id="Especialidad" name="especialidad" required>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="mb-2 bg-light rounded mx-auto">
+            <label for="exampleFormControlInput1" class="form-label">Constraseña</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="mb-2 bg-light rounded mx-auto">
+            <label for="exampleFormControlInput1" class="form-label">Confirma Constraseña</label>
+            <input type="password" class="form-control" id="repassword" name="repassword" required>
+          </div>
+        </div>
+        <small id="ErrorPass" class="text-danger"></small>
+      </div>
+      <button class="btn btn-primary" onclick="validaToken(event)">Guardar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+
+  $().ready(() => {
+    $("#password").keyup(() => { validaPass() });
+    $("#repassword").keyup(() => { validaPass() });
+
+
+  });
+  const validaPass = () => {
+    if ($("#password").val() === $("#repassword").val()) { $("#ErrorPass").html(""); return true }
+    else { $("#ErrorPass").html("Las contraseñas no coinciden"); return false }
+  }
+  const subbmit= async(event)=>{
+
+    await validaToken();
+    if(!validaPass()){
+      return false;
+    }
+  }
+
+
+  const validaToken = async () => {
+    
+    const token = sessionStorage.getItem('token');
+    if (token == undefined) {
+      alert('ERROR: No tiene token existente');
+      window.location.href = '/login';
+    } else {
+      if (!validaPass()) {
+        console.log(validaPass());
+        event.preventDefault();
+      
+      }
+      else {
+        try {
+          const { data } = await axios.get('/api/validateToken', {
+            headers: {
+              'token': sessionStorage.getItem('token')
+            }
+          });
+        }
+        catch (error) {
+          alert(error.message);
+          window.location.href = '/login';
+        }
+      }
+    }
+  }
+</script>

@@ -1,0 +1,91 @@
+<div class="row ">
+    <div class="col-11  bg-light rounded mx-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Password</th>
+                    <th scope="col">Años Experiencia</th>
+                    <th scope="col">Especialidad</th>
+                    <th scope="col">Foto</th>
+                    <th scope="col">Estado</th>
+
+                </tr>
+            </thead>
+            <tbody id="table-body">
+            </tbody>
+
+
+        </table>
+    </div>
+</div>
+
+
+<script>
+    const getInscripciones = async () => {
+        const token = sessionStorage.getItem('token');
+        try {
+            const { data } = await axios.get('/api/inscripciones', {
+                headers: {
+                    'token': sessionStorage.getItem('token')
+                }
+            });
+            return data;
+
+
+        } catch (error) {
+
+            alert(error.message);
+            window.location.href = '/login';
+        }
+    }
+
+    const setState = async (id, event) => {
+        try {
+            const resp = await axios.get(`/api/state/${id}`, {
+                headers: {
+                    'token': sessionStorage.getItem('token')
+                }
+            });
+            $('#boton' + id).toggleClass('btn-danger');
+            $('#boton' + id).toggleClass('btn-success');
+            if (resp.data) {
+                $('#boton' + id).text('COMPLETO');
+            } else {
+                $('#boton' + id).text('PENDIENTE');
+            }
+
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+    $().ready(function () {
+
+        getInscripciones().then(inscripciones => {
+            let html = '';
+            inscripciones.forEach(inscripcion => {
+                inscripcion.estado = inscripcion.estado ? `<button id="boton${inscripcion.id}" class="btn btn-success text-light text-center text-bold p-2  rounded-pill " onclick="setState(${inscripcion.id},event)"> COMPLETO</button>` : `<button id="boton${inscripcion.id}" class="text-light text-bold p-2  border-3 rounded-pill text-center btn btn-danger" onclick="setState(${inscripcion.id},event)"> PENDIENTE</button> `
+
+                html += ` <tr>
+                    <td scope="row">${inscripcion.id}</td>
+                    <td >${inscripcion.email}</td>
+                    <td>${inscripcion.nombre}</td>
+                    <td >${inscripcion.password}</td>
+                    <td >${inscripcion.anosExperiencia}</td>
+                    <td >${inscripcion.especialidad}</td>
+                    <td ><img src="/assets/users/${inscripcion.foto}" class="mx-auto" alt="" width="100" height="100" style="object-fit: cover; object-position:0 0;"></td>
+                    <td >${inscripcion.estado}</td>
+                </tr>
+                `
+
+            });
+            $('#table-body').append(html);
+
+        });
+    });
+
+
+
+</script>
