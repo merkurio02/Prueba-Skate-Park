@@ -1,68 +1,55 @@
+const { Pool } = require('pg');
 
-const pg = require('pg');
-let index = 2;
-let bd = [{
-    id: 1,
-    email: "juanito@skt.cl",
-    nombre: "juan de picas",
-    password: "1234",
-    anosExperiencia: 20,
-    especialidad: "Jugador de Poker",
-    foto: "juanito-skt-cl.png",
-    estado: false
-},
-{
-    id: 2,
-    email: "juanita@skt.cl",
-    nombre: "juanita de corazones",
-    password: "1234",
-    anosExperiencia: 20,
-    especialidad: "Jugadora de Poker",
-    foto: "juanito-skt-cl.png",
-    estado: true
-},
-{
-    id: 0,
-    email: "admin@admin.a",
-    nombre: "admin",
-    password: "1234",
-    anosExperiencia: -99,
-    especialidad: "46m1n157r4d0r",
-    foto: "juanito-skt-cl.png",
-    estado: true
-}
-];
+const pool = new Pool({
+    user: "postgres",
+    host: "localhost",
+    password: "admin",
+    port: 5432,
+    database: "skatepark"
+});
 
-const getall = () => {
-    return bd.map((u) => {
-        u.password='****';
-        return u
-    });
+
+
+const getall = async () => {
+
+    try {
+        const response = await pool.query('SELECT * FROM skaters');
+        return response.rows;
+    } catch (error) {
+        throw error;
+    }
 }
-const save = (user) => {
-    bd.push({
-        id: ++index,
-        email: user.email,
-        nombre: user.nombre,
-        password: user.password,
-        anosExperiencia: user.anosExperiencia,
-        especialidad: user.especialidad,
-        foto: user.foto,
-        estado: false
-    });
-    return user;
+const save = async (user) => {
+    try {
+        console.log(user);
+        const response = await pool.query('INSERT INTO public.skaters(email, nombre, password, anos_experiencia, especialidad, foto, estado) VALUES ($1, $2, $3, $4, $5, $6, false);', [user.email, user.nombre, user.password, user.anosExperiencia, user.especialidad, user.foto]);
+        return response.rows[0];
+    } catch (error) {
+        throw error
+    }
 }
-const existe = (email, password) => {
-    const user = bd.find((u) => u.email = email && u.password == password);
-    
+const existe = async(email, password) => {
+    const all= await getall();
+    const user =  all.find((u) => u.email = email && u.password == password);
     return (user) ? user : null;
 }
-const setState = (id) => {
-    bd = bd.map((u) => { if (u.id == id) { u.estado = !u.estado } return u });
-    return getState(id);
+const setState = async (id) => {
+    try {
+        const state=await getState(id);
+        const response = await pool.query('update skaters set estado= $1 where id = $2', [!state, id]);
+        return response.rows;
+    } catch (error) {
+        throw error;
+    }
 }
-const getState = (id) => {
-    return getall().find((u) => u.id == id).estado;
+const getState =async (id) => {
+    try {
+        const response = await pool.query('SELECT estado FROM skaters where id = $1', [id]);
+        return response.rows[0].estado;
+    } catch (error) {
+        throw error;
+    }
+    
 }
 
 

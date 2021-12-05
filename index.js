@@ -7,6 +7,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 const { getall, existe , save, setState, getState } = require('./SkateRepository');
 const { getToken, verifyToken} = require('./tokenService');
+const { stat } = require('fs');
 
 
 app.listen(3000, () => { console.log('listening on port 3000') });
@@ -48,10 +49,11 @@ app.get('/admin', (req, res) => {
 });
 
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     
-    let user = existe(email, password)
+    let user = await existe(email, password)
+    console.log(user);
     if (user != null) {
         const token = getToken(user);
         console.log(token);
@@ -119,13 +121,14 @@ app.use('/api/:a', (req, res, next) => {
 app.get('/api/validateToken', (req, res) => {
 res.status(200).send({ name: 'JsonWebTokenAlert', message: 'JWT validad' });
 });
-app.get('/api/inscripciones', (req, res) => {
-    res.status(200).send(getall());
+app.get('/api/inscripciones', async(req, res) => {
+    const all = await getall();
+    res.status(200).send(all);
 });
 
-app.get("/api/state/:id",(req,res)=>{
+app.get("/api/state/:id", async (req,res)=>{
     const id = req.params.id;
-    setState(id);
-    console.log(getState(id));
-    res.status(200).send(getState(id));
+    await setState(id);
+    const state= await getState(id);
+    res.status(200).send(state);
 });
